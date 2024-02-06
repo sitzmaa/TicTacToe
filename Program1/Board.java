@@ -91,4 +91,11 @@ public class Board {
         return 0;
     }
 
+    public boolean viewBoard(int x, int y) {
+        if(gameBoard[y][x] == ' ') {
+            return true;
+        }
+        return false;
+    }
+
 }
