@@ -62,6 +62,8 @@ public class GameManager {
                 move = player1.Prompt(board);
             }
             gameLoop = board.checkWin();
+            if (gameLoop!=0)
+                break;
             move = player2.Prompt(board);
             while (board.playerMove(move[0], move[1], 'o') == -1) {
                 System.out.println("Illigal move: please retry");

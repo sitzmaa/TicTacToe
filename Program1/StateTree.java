@@ -246,6 +246,51 @@ public class StateTree {
     }
     private int checkDiag() {
         int returnVal = 0;
+        int holder = 0;
+        char pChar = ' ';
+        for (int i = 0; i < 3; i++) {
+            if (gameState[i][i] != ' ') {
+                if (pChar == ' ') {
+                    pChar = gameState[i][i];
+                    holder++;
+                }
+                else if (gameState[i][i] != pChar) {
+                    holder = 0;
+                    break;
+                }
+                else {
+                    holder++;
+                }
+            }
+            if (pChar == 'o') {
+                holder*=-1;
+            }
+            returnVal += holder;
+            holder = 0;
+            pChar = ' ';
+        }
+        for (int i = 0; i < 3; i++) {
+            if (gameState[i][2-i] != ' ') {
+                if (pChar == ' ') {
+                    pChar = gameState[i][2-i];
+                    holder++;
+                }
+                else if (gameState[i][2-i] != pChar) {
+                    holder = 0;
+                    break;
+                }
+                else {
+                    holder++;
+                }
+            }
+            if (pChar == 'o') {
+                holder*=-1;
+            }
+            returnVal += holder;
+            holder = 0;
+            pChar = ' ';
+        }
+        
         return returnVal;
     }
     // return 1 if x, -1 if o, 0 if nonterminal
