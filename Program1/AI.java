@@ -3,37 +3,27 @@ package Program1;
 import java.util.Scanner;
 
 public class AI extends Player {
-    private boolean[] occupied;
+    private char[][] gameState;
     public AI(int num) {
         this.playerNum = num;
         reader = new Scanner(System.in);
-        occupied = new boolean[10];
     }
 
     public int[] Prompt(Board b) {
-        int[]returnVal = new int[2];
         scanBoard(b);
-        return returnVal;
-    }
-
-    // looks at available moves
-    private int miniMax(Board b) {
-        return 0;
+        return heuristic();
     }
 
     // looks for empty spaces
     private void scanBoard(Board b) {
-        int x = 0;
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                x++;
-                occupied[x] = b.viewBoard(i, j);
-            }
-        }
+        gameState = b.viewBoard();
     }
 
-    private void trimSymmetry(Board b) {
-
+    // Must be used after scan board
+    private int[] heuristic() {
+        StateTree st = new StateTree(gameState, null, false, playerNum, 0, null);
+        st.populate();
+        return st.getMove();
     }
 
 }
