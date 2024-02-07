@@ -14,7 +14,12 @@ public class AI extends Player {
         System.out.printf("Player %d: Where will I play?\n", playerNum);
         scanBoard(b);
         int[] move = heuristic();
-        System.out.printf("I will play x=%d y=%d\n", move[0],move[1]);
+        System.out.printf("I will play x=%d y=%d\n", move[0]+1,move[1]+1);
+        move[0]++;
+        move[1]++;
+        int holder = move[0];
+        move[0] = move[1];
+        move[1] = holder;
         return move;
     }
 
