@@ -16,16 +16,25 @@ public class StateTree {
     private final int maxDepth = 3;
     private int depth;
     private int playerNum;
+    private int terminalVal;
     public StateTree(char[][] state, StateTree parent, boolean leaf, int num, int depth, int[] move) {
-        this.gameState = state;
+        this.gameState = state.clone();
         this.parent = parent;
-        min = Integer.MIN_VALUE; max = Integer.MAX_VALUE;
+        min = Integer.MAX_VALUE; max = Integer.MIN_VALUE;
         isLeaf = leaf;
         children = new LinkedList<StateTree>();
         playerNum = num;
         this.depth = depth;
         this.move = new int[2];
         this.move = move;
+        terminalVal = 0;
+        legalMoves = new boolean[3][3];
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                legalMoves[i][j] = false;
+            }
+        }
+        heuristicValue = new int[3][3];
     }
 
     /* Getters */
@@ -44,6 +53,9 @@ public class StateTree {
     public void populate() {
         
         legality(); // establish legality
+        if ((terminalVal = checkTerminal()) != 0) {
+            isLeaf = true;
+        }
         boolean childLeaves = false;
         if (!isLeaf) { // if I am not a leaf I create children
             if (depth == maxDepth-1) { // if I am one above max depth my children are leaves
@@ -53,7 +65,17 @@ public class StateTree {
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
                     if (legalMoves[i][j]) {
-                        childGameState = gameState.clone();
+                        // clone the child
+                        childGameState = new char[][]{
+                            {' ', ' ', ' '},
+                            {' ', ' ', ' '},
+                            {' ', ' ', ' '}};
+                        for (int a = 0; a < 3; a++) {
+                            for (int b = 0; b<3; b++) {
+                                childGameState[a][b] = gameState[a][b];
+                            }
+                        }
+
                         if (playerNum == 1) {
                             childGameState[i][j] = 'x';
                             nextMove = new int[]{i,j};
@@ -116,7 +138,7 @@ public class StateTree {
         // set min and max to the value
         int boardValue = 0;
         // Our expression v = 1 or -1 if terminal state, v = 2X_2 + X_1 - (2O_2 + O_1)
-        boardValue = checkTerminal();
+        boardValue = terminalVal;
         if (boardValue==0) {
             boardValue+=checkRows();
             boardValue+=checkCols();
@@ -226,9 +248,65 @@ public class StateTree {
         int returnVal = 0;
         return returnVal;
     }
-    private int checkTerminal() {
+    // return 1 if x, -1 if o, 0 if nonterminal
+    public int checkTerminal() {
         int returnVal = 0;
-        // return 1 if x, -1 if o, 0 if nonterminal
+
+        returnVal = checkTerminalDiag(); // check diagonals
+        if (returnVal!=0) {
+            return returnVal;
+        }
+        for (int i = 0; i < 3; i++) { // check rows and columns
+            returnVal = checkTerminalRow(i);
+            if(returnVal!=0){
+                return returnVal;
+            }
+            returnVal = checkTerminalCol(i);
+            if(returnVal!=0){
+                return returnVal;
+            }
+        }
         return returnVal;
+    }
+    // This is a copy of the check win code from board - may change the code to make one obsolete
+    // Helper functions for checking rows columns and diagonals
+    private int checkTerminalDiag() {
+        if (gameState[0][0]!=' '&&gameState[0][0]==gameState[1][1]&&gameState[1][1]==gameState[2][2]) {
+            if (gameState[0][0]=='x') {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+        if (gameState[2][0]!=' '&&gameState[2][0]==gameState[1][1]&&gameState[1][1]==gameState[0][2]) {
+            if (gameState[0][0]=='x') {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+        return 0;
+    }
+
+    private int checkTerminalRow(int y) {
+        if (gameState[0][y]!=' '&&gameState[0][y]==gameState[1][y]&&gameState[1][y]==gameState[2][y]) {
+            if (gameState[0][y]=='x') {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+        return 0;
+    }
+
+    private int checkTerminalCol(int x) {
+        if (gameState[x][0]!=' '&&gameState[x][0]==gameState[x][1]&&gameState[x][1]==gameState[x][2]) {
+            if (gameState[x][0]=='x') {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
+        return 0;
     }
 }

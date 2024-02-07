@@ -10,8 +10,12 @@ public class AI extends Player {
     }
 
     public int[] Prompt(Board b) {
+        b.printBoard();
+        System.out.printf("Player %d: Where will I play?\n", playerNum);
         scanBoard(b);
-        return heuristic();
+        int[] move = heuristic();
+        System.out.printf("I will play x=%d y=%d\n", move[0],move[1]);
+        return move;
     }
 
     // looks for empty spaces

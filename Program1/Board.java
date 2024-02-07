@@ -92,7 +92,16 @@ public class Board {
     }
 
     public char[][] viewBoard() {
-        return gameBoard;
+        char[][] boardClone = {
+            {' ', ' ', ' '},
+            {' ', ' ', ' '},
+            {' ', ' ', ' '}};
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j<3; j++) {
+                boardClone[i][j] = gameBoard[i][j];
+            }
+        }
+        return boardClone;
     }
 
 }
