@@ -72,6 +72,10 @@ public class GameManager {
             gameLoop = board.checkWin();
         }
         board.printBoard();
-        System.out.printf("Game Over: Player%d wins!\n", gameLoop);
+        if (gameLoop == -1) {
+            System.out.println("It's a tie!");
+        } else {
+            System.out.printf("Game Over: Player%d wins!\n", gameLoop);
+        }
     }
 }

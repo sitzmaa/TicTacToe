@@ -318,16 +318,16 @@ public class StateTree {
     private int checkTerminalDiag() {
         if (gameState[0][0]!=' '&&gameState[0][0]==gameState[1][1]&&gameState[1][1]==gameState[2][2]) {
             if (gameState[0][0]=='x') {
-                return 1;
+                return 100;
             } else {
-                return -1;
+                return -100;
             }
         }
         if (gameState[2][0]!=' '&&gameState[2][0]==gameState[1][1]&&gameState[1][1]==gameState[0][2]) {
             if (gameState[0][0]=='x') {
-                return 1;
+                return 100;
             } else {
-                return -1;
+                return -100;
             }
         }
         return 0;
@@ -336,9 +336,9 @@ public class StateTree {
     private int checkTerminalRow(int y) {
         if (gameState[0][y]!=' '&&gameState[0][y]==gameState[1][y]&&gameState[1][y]==gameState[2][y]) {
             if (gameState[0][y]=='x') {
-                return 1;
+                return 100;
             } else {
-                return -1;
+                return -100;
             }
         }
         return 0;
