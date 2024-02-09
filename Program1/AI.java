@@ -30,7 +30,7 @@ public class AI extends Player {
 
     // Must be used after scan board
     private int[] heuristic() {
-        StateTree st = new StateTree(gameState, null, false, playerNum, 0, null);
+        StateTree st = new StateTree(gameState, null, false, playerNum, 1, null);
         st.populate();
         return st.getMove();
     }

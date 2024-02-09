@@ -13,7 +13,7 @@ public class StateTree {
     private int min;
     private int max;
     private boolean isLeaf;
-    private final int maxDepth = 3;
+    private final int maxDepth = 10;
     private int depth;
     private int playerNum;
     private int terminalVal;
@@ -124,6 +124,7 @@ public class StateTree {
                         if (playerNum == 2) {
                             if (min == heuristicValue[i][j]) {
                                 move = new int[] {i,j};
+
                             }
                         }
                     }
@@ -139,11 +140,9 @@ public class StateTree {
         int boardValue = 0;
         // Our expression v = 1 or -1 if terminal state, v = 2X_2 + X_1 - (2O_2 + O_1)
         boardValue = terminalVal;
-        if (boardValue==0) {
-            boardValue+=checkRows();
-            boardValue+=checkCols();
-            boardValue+=checkDiag();
-        }
+        boardValue+=checkRows();
+        boardValue+=checkCols();
+        boardValue+=checkDiag();
         min = boardValue;
         max = boardValue;
     }
@@ -236,6 +235,9 @@ public class StateTree {
                     }
                 }
             }
+            if (holder > 1) {
+                holder *= 3;
+            }
             if (pChar == 'o') {
                 holder*=-1; // if the char was o reverse the points
             }
@@ -262,6 +264,9 @@ public class StateTree {
                     holder++;
                 }
             }
+            if (holder > 1) {
+                holder *= 3;
+            }
             if (pChar == 'o') {
                 holder*=-1;
             }
@@ -282,6 +287,9 @@ public class StateTree {
                 else {
                     holder++;
                 }
+            }
+            if (holder > 1) {
+                holder *= 3;
             }
             if (pChar == 'o') {
                 holder*=-1;
@@ -318,16 +326,16 @@ public class StateTree {
     private int checkTerminalDiag() {
         if (gameState[0][0]!=' '&&gameState[0][0]==gameState[1][1]&&gameState[1][1]==gameState[2][2]) {
             if (gameState[0][0]=='x') {
-                return 100;
+                return 10;
             } else {
-                return -100;
+                return -10;
             }
         }
         if (gameState[2][0]!=' '&&gameState[2][0]==gameState[1][1]&&gameState[1][1]==gameState[0][2]) {
             if (gameState[0][0]=='x') {
-                return 100;
+                return 10;
             } else {
-                return -100;
+                return -10;
             }
         }
         return 0;
@@ -336,9 +344,9 @@ public class StateTree {
     private int checkTerminalRow(int y) {
         if (gameState[0][y]!=' '&&gameState[0][y]==gameState[1][y]&&gameState[1][y]==gameState[2][y]) {
             if (gameState[0][y]=='x') {
-                return 100;
+                return 10;
             } else {
-                return -100;
+                return -10;
             }
         }
         return 0;
@@ -347,9 +355,9 @@ public class StateTree {
     private int checkTerminalCol(int x) {
         if (gameState[x][0]!=' '&&gameState[x][0]==gameState[x][1]&&gameState[x][1]==gameState[x][2]) {
             if (gameState[x][0]=='x') {
-                return 1;
+                return 10;
             } else {
-                return -1;
+                return -10;
             }
         }
         return 0;
