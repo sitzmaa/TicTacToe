@@ -10,17 +10,16 @@ public class StateTree {
     private boolean[][] legalMoves;
     private LinkedList<StateTree> children;
     private StateTree parent;
-    private int min;
-    private int max;
+    private int nodeValue;
     private boolean isLeaf;
-    private final int maxDepth = 10;
+    private final int maxDepth = 4;
     private int depth;
     private int playerNum;
     private int terminalVal;
     public StateTree(char[][] state, StateTree parent, boolean leaf, int num, int depth, int[] move) {
         this.gameState = state.clone();
         this.parent = parent;
-        min = Integer.MAX_VALUE; max = Integer.MIN_VALUE;
+        nodeValue = 0;
         isLeaf = leaf;
         children = new LinkedList<StateTree>();
         playerNum = num;
@@ -35,14 +34,6 @@ public class StateTree {
             }
         }
         heuristicValue = new int[3][3];
-    }
-
-    /* Getters */
-    public int getMin() {
-        return min;
-    }
-    public int getMax() {
-        return max;
     }
 
     public int[] getMove() {
@@ -106,30 +97,41 @@ public class StateTree {
             }
             // Now evaluate yourself
             heuristic();
+            minMax();
         }
-        minMax();
     }
     private void minMax() {
+        int bestI = -1, bestJ=-1;
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
                 if (legalMoves[i][j]) {
-                    max = Integer.max(max, heuristicValue[i][j]);
-                    min = Integer.min(min, heuristicValue[i][j]);
-                    if (parent == null) {
-                        if (playerNum == 1) {
-                            if (max == heuristicValue[i][j]) {
-                                move = new int[] {i,j};
-                            }
-                        }
-                        if (playerNum == 2) {
-                            if (min == heuristicValue[i][j]) {
-                                move = new int[] {i,j};
-
-                            }
+                    if (playerNum == 1)
+                        nodeValue = Integer.max(nodeValue, heuristicValue[i][j]);
+                    else
+                        nodeValue = Integer.min(nodeValue, heuristicValue[i][j]);
+                    if (nodeValue == heuristicValue[i][j]) {
+                        bestI = i;
+                        bestJ = j;
+                    }
+                }
+            }
+        }
+        if (parent == null) {
+            if (bestI==-1&&bestJ==-1) {
+                System.out.println("Something is wrong");
+                // pick the first legal move, the game is unwinable
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        if(legalMoves[i][j]) {
+                            bestI = i;
+                            bestJ = j;
+                            i = 4;
+                            j = 4;
                         }
                     }
                 }
             }
+            move = new int[]{bestI,bestJ};
         }
     }
 
@@ -138,13 +140,20 @@ public class StateTree {
         // establish the value of the board
         // set min and max to the value
         int boardValue = 0;
-        // Our expression v = 1 or -1 if terminal state, v = 2X_2 + X_1 - (2O_2 + O_1)
+        // Our expression v = 10 or -10 if terminal state, v = 3X_2 + X_1 - (3O_2 + O_1)
         boardValue = terminalVal;
-        boardValue+=checkRows();
-        boardValue+=checkCols();
-        boardValue+=checkDiag();
-        min = boardValue;
-        max = boardValue;
+        if (boardValue == 0) {
+            boardValue+=checkRows();
+            boardValue+=checkCols();
+            boardValue+=checkDiag();
+        }
+        if (terminalVal!=0 && depth==3) {
+            if (playerNum == 1)
+                nodeValue = Integer.MIN_VALUE+1;
+            else
+                nodeValue = Integer.MAX_VALUE-1;
+        } else
+            nodeValue = boardValue;
     }
     // Bubble up
     private void heuristic() {
@@ -153,14 +162,14 @@ public class StateTree {
         if (playerNum == 1) {
             for (StateTree child : children) {
                 childPos = child.getMove();
-                heuristicValue[childPos[0]][childPos[1]] = child.max;
+                heuristicValue[childPos[0]][childPos[1]] = child.nodeValue;
             }
         }
         // if player two heuristic for min
         else {
             for (StateTree child : children) {
                 childPos = child.getMove();
-                heuristicValue[childPos[0]][childPos[1]] = child.min;
+                heuristicValue[childPos[0]][childPos[1]] = child.nodeValue;
             }
         }
     }
@@ -180,123 +189,99 @@ public class StateTree {
     // Helper Function returns the value of each row, column or diag
     private int checkRows() {
         int returnVal = 0; // value of all rows
-        int holder; // value of current row
-        char pChar = ' '; // char holder (player char)
-        int j; // internal loop needs a prior declaration
+        int xRows = 0, oRows = 0;
         for (int i = 0; i < 3; i++) {
-            holder = 0;
-            j = 0;
-            for (;j < 3; j++ ) { // find the first instance of a char in the row
-                if (gameState[i][j]!=' ') {
-                    pChar = gameState[i][j]; // if we find something other than empty set our char to it
-                    break;
-                }
+            for (int j = 0; j < 3; j++) {
+                if (gameState[i][j]=='x')
+                    xRows++;
+                if (gameState[i][j]=='o')
+                    oRows++;
             }
-            if (pChar!=' ') { // if we found a char
-                for (;j < 3; j++) { // iterate through the rest of the row
-                    if (gameState[i][j] == pChar) {
-                        holder++; // add a point for each char we see
-                    } else if (gameState[i][j] != ' ' && gameState[i][j] != pChar) { // if we see the opposite char
-                        holder = 0; // this row is worth nothing
-                        j = 4; // no more loop
-                    }
-                }
+            if (xRows>0&&oRows>0) {
+                //Nothing
+            } else if (xRows>0) {
+                if (xRows==2)
+                    xRows++;
+                returnVal+=xRows;
+            } else if (oRows>0) {
+                if (oRows==2)
+                    oRows++;
+                returnVal-=oRows;
             }
-            if (pChar == 'o') {
-                holder*=-1; // if the char was o reverse the points
-            }
-            pChar = ' '; // reset char holder
-            returnVal+=holder; // add the holder to our rows value
+            xRows = 0;
+            oRows = 0;
         }
         return returnVal; // return the vlaue of all rows
     }
     // j and i in gamestate are switched from previous function --- make note if this really is a solution
     private int checkCols() {
-        int returnVal = 0; // value of all cols
-        int holder; // value of current col
-        char pChar = ' '; // char holder (player char)
-        int j; // internal loop needs a prior declaration
+        int returnVal = 0; // value of all rows
+        int xCols = 0, oCols = 0;
         for (int i = 0; i < 3; i++) {
-            holder = 0;
-            j = 0;
-            for (;j < 3; j++ ) { // find the first instance of a char in the col
-                if (gameState[j][i]!=' ') {
-                    pChar = gameState[j][i]; // if we find something other than empty set our char to it
-                    break;
-                }
+            for (int j = 0; j < 3; j++) {
+                if (gameState[i][j]=='x')
+                    xCols++;
+                if (gameState[i][j]=='o')
+                    oCols++;
             }
-            if (pChar!=' ') { // if we found a char
-                for (;j < 3; j++) { // iterate through the rest of the col
-                    if (gameState[j][i] == pChar) {
-                        holder++; // add a point for each char we see
-                    } else if (gameState[j][i] != ' ' && gameState[j][i] != pChar) { // if we see the opposite char
-                        holder = 0; // this col is worth nothing
-                        j = 4; // no more loop
-                    }
-                }
+            if (xCols>0&&oCols>0) {
+                //Nothing
+            } else if (xCols>0) {
+                if (xCols==2)
+                    xCols++;
+                returnVal+=xCols;
+            } else if (oCols>0) {
+                if (oCols==2)
+                    oCols++;
+                returnVal-=oCols;
             }
-            if (holder > 1) {
-                holder *= 3;
-            }
-            if (pChar == 'o') {
-                holder*=-1; // if the char was o reverse the points
-            }
-            pChar = ' '; // reset char holder
-            returnVal+=holder; // add the holder to our cols value
+            xCols = 0;
+            oCols = 0;
         }
         return returnVal; // return the vlaue of all cols
     }
     private int checkDiag() {
         int returnVal = 0;
-        int holder = 0;
-        char pChar = ' ';
+        int xDia=0,oDia=0;
         for (int i = 0; i < 3; i++) {
-            if (gameState[i][i] != ' ') {
-                if (pChar == ' ') {
-                    pChar = gameState[i][i];
-                    holder++;
-                }
-                else if (gameState[i][i] != pChar) {
-                    holder = 0;
-                    break;
-                }
-                else {
-                    holder++;
-                }
+            if (gameState[i][i] == 'x') {
+                xDia++;
             }
-            if (holder > 1) {
-                holder *= 3;
+            if (gameState[i][i] == 'o') {
+                oDia++;
             }
-            if (pChar == 'o') {
-                holder*=-1;
-            }
-            returnVal += holder;
-            holder = 0;
-            pChar = ' ';
         }
+        if (xDia>0&&oDia>0) {
+            //Nothing
+        } else if (xDia>0) {
+            if (xDia==2)
+                xDia++;
+            returnVal+=xDia;
+        } else if (oDia>0) {
+            if (oDia==2)
+                oDia++;
+            returnVal-=oDia;
+        }
+        xDia = 0;
+        oDia = 0;
         for (int i = 0; i < 3; i++) {
-            if (gameState[i][2-i] != ' ') {
-                if (pChar == ' ') {
-                    pChar = gameState[i][2-i];
-                    holder++;
-                }
-                else if (gameState[i][2-i] != pChar) {
-                    holder = 0;
-                    break;
-                }
-                else {
-                    holder++;
-                }
+            if (gameState[i][2-i] == 'x') {
+                xDia++;
             }
-            if (holder > 1) {
-                holder *= 3;
+            if (gameState[i][2-i] == 'o') {
+                oDia++;
             }
-            if (pChar == 'o') {
-                holder*=-1;
-            }
-            returnVal += holder;
-            holder = 0;
-            pChar = ' ';
+        }
+        if (xDia>0&&oDia>0) {
+            //Nothing
+        } else if (xDia>0) {
+            if (xDia==2)
+                xDia++;
+            returnVal+=xDia;
+        } else if (oDia>0) {
+            if (oDia==2)
+                oDia++;
+            returnVal-=oDia;
         }
         
         return returnVal;
