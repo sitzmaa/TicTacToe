@@ -12,7 +12,7 @@ public class StateTree {
     private StateTree parent;
     private int nodeValue;
     private boolean isLeaf;
-    private final int maxDepth = 4;
+    private final int maxDepth = 100;
     private int depth;
     private int playerNum;
     private int terminalVal;
@@ -118,7 +118,7 @@ public class StateTree {
         }
         if (parent == null) {
             if (bestI==-1&&bestJ==-1) {
-                System.out.println("Something is wrong");
+                System.out.println("Something is wrong... I must admit defeat");
                 // pick the first legal move, the game is unwinable
                 for (int i = 0; i < 3; i++) {
                     for (int j = 0; j < 3; j++) {
